@@ -30,17 +30,33 @@ nm_solver = NumericalSolver(A, b, n=50)
 phase1_x, phase1_norms = nm_solver.jacobi()
 
 # Phase II: Multigrid cycle
+# One V-Cycle
 solver = Solver(A, b, initial_guess=phase1_x)
-x = solver.solve(number_of_levels=5)
+x_single_cycle = solver.solve(number_of_levels=10)
+# Multiple V-Cycles
+x_multiple_cycles = phase1_x
+for _ in range(10):
+    solver = Solver(A, b, initial_guess=x_multiple_cycles)
+    x_multiple_cycles = solver.solve(number_of_levels=10)
+    x_multiple_cycles, _ = NumericalSolver(
+        A, b, n=5, x=x_multiple_cycles).jacobi()
 
 # Phase III: More jacobi iterations, so we could see multigrid process
 #            more clearly.
-nm_solver = NumericalSolver(A, b, n=100, x=x)
-x, norms = nm_solver.jacobi()
+nm_solver = NumericalSolver(A, b, n=100, x=x_single_cycle)
+x, norms_single_v_cycle = nm_solver.jacobi()
+
+nm_solver = NumericalSolver(A, b, n=100, x=x_multiple_cycles)
+x, norms_multiple_v_cycles = nm_solver.jacobi()
 
 # Plotting the result of multigrid solver
-norms = [*phase1_norms, *norms]
-plt.plot(range(len(norms)), norms, label='Multigrid on iteration 50')
+norms_single_cycle = [*phase1_norms, *norms_single_v_cycle]
+plt.plot(range(len(norms_single_cycle)), norms_single_cycle,
+         label='Multigrid on iteration 50 - One V-Cycle')
+
+norms_single_cycle = [*phase1_norms, *norms_multiple_v_cycles]
+plt.plot(range(len(norms_single_cycle)), norms_single_cycle,
+         label='Multigrid on iteration 50 - Ten V-Cycles')
 
 
 # Phase IV: A simple jacobi solver with the same number of total iterations
