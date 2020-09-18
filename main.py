@@ -12,7 +12,7 @@ b = np.load('data/axb_10k/b.npy')
 
 multigrid.init()
 # Initialize multigrid settings:
-# Defailt values are:
+# Default values are:
 #       multigrid.pre_smoother = 'jacobi'
 #       multigrid.pre_smooth_iters = 2
 #       multigrid.post_smoother = 'jacobi'
